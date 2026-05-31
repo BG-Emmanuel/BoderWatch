@@ -1,0 +1,27 @@
+spring:
+  application.name: ingestion-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:bw}
+    password: ${SPRING_DATASOURCE_PASSWORD:borderwatch}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+  jpa:
+    hibernate.ddl-auto: none
+    show-sql: false
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: borderwatch
+    password: ${SPRING_RABBITMQ_PASSWORD:borderwatch}
+    listener.simple.prefetch: 100
+server.port: ${PORT:8081}
+jwt:
+  secret: ${JWT_SECRET:borderwatch-secret-key-change-in-production-min-256-bits}
+  expiration-ms: 86400000
+management:
+  endpoints.web.exposure.include: health,prometheus,info
+  endpoint.health.show-details: always
+  metrics.tags.service: ingestion-service

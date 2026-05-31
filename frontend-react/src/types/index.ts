@@ -1,0 +1,11 @@
+export type UserRole='ROLE_ADMIN'|'ROLE_DIRECTOR'|'ROLE_OFFICER'|'ROLE_OPS'|'ROLE_AUDITOR'|'ROLE_BEACON';
+export interface User{id:string;username:string;fullName:string;role:UserRole}
+export interface AuthState{user:User|null;accessToken:string|null;isLoading:boolean;login:(u:string,p:string)=>Promise<void>;logout:()=>void;hasRole:(...roles:UserRole[])=>boolean}
+export type TelemetryStatus='ON_ROUTE'|'OFF_ROUTE'|'STATIONARY';
+export type Severity='LOW'|'MEDIUM'|'HIGH';
+export type ViolationStatus='PENDING'|'ACKNOWLEDGED'|'CONTESTED'|'RESOLVED';
+export type RiskLevel='CRITICAL'|'HIGH'|'MEDIUM'|'LOW';
+export interface Truck{id:string;truck_id:string;plate_number:string;operator_name:string;cargo_type:string;is_active:boolean;registered_at:string;lat?:number;lon?:number;speed?:number;status?:TelemetryStatus;riskScore?:number;riskLevel?:RiskLevel}
+export interface Violation{id:string;truck_id:string;corridor_id:string;latitude:number;longitude:number;deviation_km:number;severity:Severity;penalty_fcfa:number;status:ViolationStatus;detected_at:string;acknowledged_by?:string}
+export interface AuditBlock{index:number;violation_id:string;violation_hash:string;previous_hash:string;block_hash:string;timestamp:string}
+export interface DashKPIs{rps:number;p95:number;replicas:string;violations:number;totalFcfa:number;activeTrucks:number}

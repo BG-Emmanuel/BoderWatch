@@ -1,0 +1,13 @@
+target/
+*.class
+*.jar
+node_modules/
+dist/
+.env
+*.tfstate
+*.tfvars
+.terraform/
+.DS_Store
+*.log
+.idea/
+.vscode/

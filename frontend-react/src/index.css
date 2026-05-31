@@ -1,0 +1,37 @@
+:root {
+  --bg:#080c14;--bg2:#0d1520;--bg3:#111c2e;--border:#1a2d4a;--border2:#243d5c;
+  --text:#c8d8ec;--text2:#6b8aaa;--text3:#3d5470;
+  --blue:#2a7fff;--teal:#0fb8a0;--amber:#f5a623;--red:#e84545;--green:#24c97e;--purple:#8b5cf6;--white:#e8f0f8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:14px;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+a{color:var(--blue);text-decoration:none;}button{font-family:inherit;cursor:pointer;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.fade-in{animation:fadeIn .25s ease}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text);font-family:monospace}
+.card-body{padding:16px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:5px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--blue);color:var(--white)}.btn-primary:hover{background:#1a6fee}
+.btn-success{background:var(--teal);color:var(--bg)}.btn-success:hover{opacity:.9}
+.btn-danger{background:rgba(232,69,69,.2);color:var(--red);border:1px solid rgba(232,69,69,.3)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.badge-high{background:rgba(232,69,69,.2);color:var(--red);border:1px solid rgba(232,69,69,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.badge-medium{background:rgba(245,166,35,.2);color:var(--amber);border:1px solid rgba(245,166,35,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.badge-low{background:rgba(36,201,126,.15);color:var(--green);border:1px solid rgba(36,201,126,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700}
+.tag-ndjamena{background:rgba(42,127,255,.15);color:#6aabff;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600}
+.tag-bangui{background:rgba(139,92,246,.15);color:#b39bff;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{padding:8px 12px;text-align:left;color:var(--text3);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:hover{background:rgba(42,127,255,.05)}
+tbody td{padding:9px 12px;white-space:nowrap}
+.input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px 12px;color:var(--text);font-size:12px;outline:none;transition:border-color .2s}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(42,127,255,.1)}
+.leaflet-container{background:#06101e!important}
+.leaflet-tile-pane{filter:brightness(.7) saturate(.8)}
+.leaflet-control-attribution{display:none}

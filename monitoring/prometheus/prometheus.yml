@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+rule_files:
+  - "rules/*.yml"
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+scrape_configs:
+  - job_name: ingestion
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ingestion-1:8081, ingestion-2:8081]
+  - job_name: tracking
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [tracking-1:8082, tracking-2:8082]
+  - job_name: compliance
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [compliance-1:8083, compliance-2:8083]
+  - job_name: node-exporter
+    static_configs:
+      - targets: [node-exporter:9100]

@@ -1,0 +1,16 @@
+groups:
+  - name: borderwatch
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"ingestion|tracking|compliance"} == 0
+        for: 15s
+        labels: {severity: critical}
+        annotations: {summary: "Service down: {{ $labels.instance }}"}
+      - alert: HighCPU
+        expr: 100-(avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m]))*100) > 85
+        for: 2m
+        labels: {severity: warning}
+      - alert: LowMemory
+        expr: (node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes)*100 < 10
+        for: 1m
+        labels: {severity: critical}

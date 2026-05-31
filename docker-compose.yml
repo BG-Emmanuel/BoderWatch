@@ -1,0 +1,216 @@
+name: borderwatch
+networks:
+  bw-net: {driver: bridge}
+volumes:
+  mysql-data: {}
+  rabbitmq-data: {}
+  prometheus-data: {}
+  grafana-data: {}
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: borderwatch
+      MYSQL_USER: bw
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./scripts/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    ports: ["13306:3306"]
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-u","root","-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: borderwatch
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
+    ports: ["5672:5672","15672:15672"]
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","rabbitmq-diagnostics","-q","ping"]
+      interval: 10s
+      start_period: 30s
+      retries: 5
+
+  ingestion-1:
+    build: {context: ., dockerfile: ingestion-service-spring/Dockerfile}
+    environment:
+      SERVICE_ID: ingestion-1
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8081/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  ingestion-2:
+    build: {context: ., dockerfile: ingestion-service-spring/Dockerfile}
+    environment:
+      SERVICE_ID: ingestion-2
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8081/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  tracking-1:
+    build: {context: ., dockerfile: tracking-engine-spring/Dockerfile}
+    environment:
+      SERVICE_ID: tracking-1
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8082/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  tracking-2:
+    build: {context: ., dockerfile: tracking-engine-spring/Dockerfile}
+    environment:
+      SERVICE_ID: tracking-2
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8082/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  compliance-1:
+    build: {context: ., dockerfile: compliance-service-spring/Dockerfile}
+    environment:
+      SERVICE_ID: compliance-1
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8083/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  compliance-2:
+    build: {context: ., dockerfile: compliance-service-spring/Dockerfile}
+    environment:
+      SERVICE_ID: compliance-2
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: bw
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+    healthcheck:
+      test: ["CMD","wget","--spider","-q","http://localhost:8083/actuator/health"]
+      interval: 10s
+      start_period: 180s
+      retries: 3
+
+  gateway:
+    build: {context: ., dockerfile: gateway/Dockerfile}
+    ports: ["80:80"]
+    depends_on:
+      ingestion-1: {condition: service_healthy}
+      ingestion-2: {condition: service_healthy}
+    networks: [bw-net]
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml","--storage.tsdb.path=/prometheus","--storage.tsdb.retention.time=15d"]
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    ports: ["9090:9090"]
+    networks: [bw-net]
+    restart: always
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports: ["3000:3000"]
+    networks: [bw-net]
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports: ["9093:9093"]
+    networks: [bw-net]
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    volumes: ["/proc:/host/proc:ro","/sys:/host/sys:ro"]
+    command: ["--path.procfs=/host/proc","--path.sysfs=/host/sys"]
+    networks: [bw-net]
+    restart: always

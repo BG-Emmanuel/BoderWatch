@@ -1,0 +1,83 @@
+<svg width="700" height="480" viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg" font-family="Arial,sans-serif">
+<rect width="700" height="480" fill="#0d1520"/>
+<text x="350" y="22" text-anchor="middle" fill="#0fb8a0" font-size="14" font-weight="bold">BorderWatch — System Architecture</text>
+<text x="350" y="38" text-anchor="middle" fill="#6b8aaa" font-size="9">SOA + Hexagonal + Event-Driven · Spring Boot 3.3/Java 21 · React 18/TypeScript</text>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- CLIENTS -->
+<rect x="30"  y="52" width="130" height="48" rx="7" fill="#111c2e" stroke="#2a7fff" stroke-width="1.2"/>
+<text x="95"  y="72" text-anchor="middle" fill="#2a7fff" font-size="10" font-weight="bold">GPS Beacons</text>
+<text x="95"  y="86" text-anchor="middle" fill="#6b8aaa" font-size="8">10,000 truck units</text>
+<rect x="180" y="52" width="160" height="48" rx="7" fill="#111c2e" stroke="#0fb8a0" stroke-width="1.2"/>
+<text x="260" y="72" text-anchor="middle" fill="#0fb8a0" font-size="10" font-weight="bold">React 18 Frontend</text>
+<text x="260" y="86" text-anchor="middle" fill="#6b8aaa" font-size="8">TypeScript · Zustand · React-Leaflet</text>
+<rect x="360" y="52" width="130" height="48" rx="7" fill="#111c2e" stroke="#6b8aaa" stroke-width="1"/>
+<text x="425" y="72" text-anchor="middle" fill="#6b8aaa" font-size="10" font-weight="bold">Customs Officers</text>
+<text x="425" y="86" text-anchor="middle" fill="#3d5470" font-size="8">Browser / Mobile</text>
+<!-- GATEWAY -->
+<rect x="30" y="132" width="500" height="44" rx="7" fill="#0f2a20" stroke="#0fb8a0" stroke-width="1.8"/>
+<text x="280" y="151" text-anchor="middle" fill="#0fb8a0" font-size="11" font-weight="bold">Nginx 1.27 — API Gateway</text>
+<text x="280" y="166" text-anchor="middle" fill="#6b8aaa" font-size="8">SPA serving · least_conn load balance · rate-limit 200r/s · TLS termination · Security headers</text>
+<!-- SERVICES -->
+<rect x="30"  y="210" width="148" height="74" rx="7" fill="#1a1200" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5,2"/>
+<text x="104" y="228" text-anchor="middle" fill="#BA7517" font-size="9" font-weight="bold">Ingestion Service ×2</text>
+<text x="104" y="242" text-anchor="middle" fill="#6b8aaa" font-size="8">Spring Boot 3.3 / Java 21</text>
+<text x="104" y="256" text-anchor="middle" fill="#6b8aaa" font-size="8">TelemetryService · @Async</text>
+<text x="104" y="270" text-anchor="middle" fill="#6b8aaa" font-size="8">JWT Auth · TruckController</text>
+<text x="104" y="282" text-anchor="middle" fill="#0fb8a0" font-size="8">202 Accepted &lt;10ms</text>
+<rect x="196" y="210" width="148" height="74" rx="7" fill="#0a1e1e" stroke="#0fb8a0" stroke-width="1.5" stroke-dasharray="5,2"/>
+<text x="270" y="228" text-anchor="middle" fill="#0fb8a0" font-size="9" font-weight="bold">Tracking Engine ×2</text>
+<text x="270" y="242" text-anchor="middle" fill="#6b8aaa" font-size="8">Spring Boot 3.3 / Java 21</text>
+<text x="270" y="256" text-anchor="middle" fill="#6b8aaa" font-size="8">GeofencingService</text>
+<text x="270" y="270" text-anchor="middle" fill="#6b8aaa" font-size="8">Haversine algorithm</text>
+<text x="270" y="282" text-anchor="middle" fill="#0fb8a0" font-size="8">AMQP consumer</text>
+<rect x="362" y="210" width="168" height="74" rx="7" fill="#110a22" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="5,2"/>
+<text x="446" y="228" text-anchor="middle" fill="#8b5cf6" font-size="9" font-weight="bold">Compliance Service ×2</text>
+<text x="446" y="242" text-anchor="middle" fill="#6b8aaa" font-size="8">Spring Boot 3.3 / Java 21</text>
+<text x="446" y="256" text-anchor="middle" fill="#6b8aaa" font-size="8">ComplianceService</text>
+<text x="446" y="270" text-anchor="middle" fill="#6b8aaa" font-size="8">SHA-256 blockchain</text>
+<text x="446" y="282" text-anchor="middle" fill="#8b5cf6" font-size="8">AMQP consumer · JdbcTemplate</text>
+<rect x="550" y="210" width="135" height="74" rx="7" fill="#1a1200" stroke="#BA7517" stroke-width="2"/>
+<text x="617" y="228" text-anchor="middle" fill="#BA7517" font-size="9" font-weight="bold">RabbitMQ 3.13</text>
+<text x="617" y="242" text-anchor="middle" fill="#6b8aaa" font-size="8">telemetry.events</text>
+<text x="617" y="256" text-anchor="middle" fill="#3d5470" font-size="7">tracking.queue</text>
+<text x="617" y="268" text-anchor="middle" fill="#3d5470" font-size="7">compliance.queue</text>
+<text x="617" y="282" text-anchor="middle" fill="#6b8aaa" font-size="8">Durable queues</text>
+<!-- DATA -->
+<rect x="30"  y="322" width="250" height="44" rx="7" fill="#0a0a22" stroke="#2a7fff" stroke-width="2"/>
+<text x="155" y="341" text-anchor="middle" fill="#2a7fff" font-size="10" font-weight="bold">MySQL 8 / TiDB Cloud</text>
+<text x="155" y="356" text-anchor="middle" fill="#6b8aaa" font-size="8">schema.sql auto-loaded · users · trucks · violations · audit_chain</text>
+<!-- MONITORING -->
+<rect x="310" y="322" width="114" height="44" rx="7" fill="#1a0a08" stroke="#D85A30" stroke-width="1.5"/>
+<text x="367" y="341" text-anchor="middle" fill="#D85A30" font-size="9" font-weight="bold">Prometheus v2.53</text>
+<text x="367" y="356" text-anchor="middle" fill="#6b8aaa" font-size="8">22 alert rules · 5s scrape</text>
+<rect x="436" y="322" width="110" height="44" rx="7" fill="#1a0a08" stroke="#D85A30" stroke-width="1.5"/>
+<text x="491" y="341" text-anchor="middle" fill="#D85A30" font-size="9" font-weight="bold">Grafana 11.1</text>
+<text x="491" y="356" text-anchor="middle" fill="#6b8aaa" font-size="8">21 panels · Alertmanager</text>
+<!-- ARROWS -->
+<line x1="95"  y1="100" x2="130" y2="132" stroke="#2a7fff" stroke-width="1.2" marker-end="url(#a)"/>
+<line x1="260" y1="100" x2="260" y2="132" stroke="#0fb8a0" stroke-width="1.2" marker-end="url(#a)"/>
+<line x1="425" y1="100" x2="380" y2="132" stroke="#6b8aaa" stroke-width="1"   marker-end="url(#a)"/>
+<line x1="100" y1="176" x2="100" y2="210" stroke="#BA7517" stroke-width="1.3" marker-end="url(#a)"/>
+<line x1="240" y1="176" x2="260" y2="210" stroke="#0fb8a0" stroke-width="1.3" marker-end="url(#a)"/>
+<line x1="360" y1="176" x2="430" y2="210" stroke="#8b5cf6" stroke-width="1.3" marker-end="url(#a)"/>
+<path d="M 178 244 Q 360 200 550 244" fill="none" stroke="#BA7517" stroke-width="1.3" stroke-dasharray="5,2" marker-end="url(#a)"/>
+<line x1="104" y1="284" x2="104" y2="322" stroke="#2a7fff" stroke-width="1"   stroke-dasharray="3,2" marker-end="url(#a)"/>
+<line x1="446" y1="284" x2="280" y2="322" stroke="#2a7fff" stroke-width="1"   stroke-dasharray="3,2" marker-end="url(#a)"/>
+<line x1="367" y1="322" x2="200" y2="284" stroke="#D85A30" stroke-width="0.8" stroke-dasharray="3,3" marker-end="url(#a)"/>
+<line x1="436" y1="344" x2="424" y2="344" stroke="#D85A30" stroke-width="1"   marker-end="url(#a)"/>
+<!-- INNOVATIONS -->
+<rect x="30" y="400" width="650" height="66" rx="6" fill="#0d1520" stroke="#243d5c" stroke-width="1"/>
+<text x="355" y="416" text-anchor="middle" fill="#6b8aaa" font-size="9" font-weight="bold">KEY INNOVATIONS</text>
+<rect x="40"  y="422" width="148" height="34" rx="4" fill="#1a1200" stroke="#BA7517" stroke-width="1"/>
+<text x="114" y="437" text-anchor="middle" fill="#BA7517" font-size="8" font-weight="bold">🧠 AI Risk Scoring</text>
+<text x="114" y="449" text-anchor="middle" fill="#3d5470" font-size="7">Z-score + IQR + Kalman filter</text>
+<rect x="198" y="422" width="148" height="34" rx="4" fill="#110a22" stroke="#8b5cf6" stroke-width="1"/>
+<text x="272" y="437" text-anchor="middle" fill="#8b5cf6" font-size="8" font-weight="bold">⛓ SHA-256 Blockchain</text>
+<text x="272" y="449" text-anchor="middle" fill="#3d5470" font-size="7">Audit chain · Merkle tree · Certs</text>
+<rect x="356" y="422" width="148" height="34" rx="4" fill="#0a1e1e" stroke="#0fb8a0" stroke-width="1"/>
+<text x="430" y="437" text-anchor="middle" fill="#0fb8a0" font-size="8" font-weight="bold">🗺 Live CEMAC Map</text>
+<text x="430" y="449" text-anchor="middle" fill="#3d5470" font-size="7">React-Leaflet · OpenStreetMap</text>
+<rect x="514" y="422" width="156" height="34" rx="4" fill="#110a22" stroke="#BA7517" stroke-width="1"/>
+<text x="592" y="437" text-anchor="middle" fill="#BA7517" font-size="8" font-weight="bold">✨ AI Intelligence</text>
+<text x="592" y="449" text-anchor="middle" fill="#3d5470" font-size="7">Claude claude-sonnet-4-6 briefings</text>
+</svg>
