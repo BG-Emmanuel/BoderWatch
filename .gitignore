@@ -11,3 +11,5 @@ dist/
 *.log
 .idea/
 .vscode/
+application-local.yml
+schema-local.sql
