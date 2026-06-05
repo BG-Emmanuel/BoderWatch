@@ -35,13 +35,16 @@ public class ComplianceService {
         if(!isValidTransition(from,to)) throw new IllegalArgumentException("Invalid transition: "+from+" → "+to);
         return new AuditEntry(id,from,to,officerId,Instant.now());
     }
-    public synchronized AuditBlock createAuditBlock(String violationId,Map<String,Object> data){
-        String vHash=sha256(new TreeMap<>(data).toString());
-        int idx=chain.size();
-        String bHash=sha256(idx+":"+lastHash+":"+Instant.now()+":"+vHash);
-        AuditBlock b=new AuditBlock(idx,violationId,vHash,lastHash,bHash,Instant.now());
-        chain.add(b); lastHash=bHash; return b;
-    }
+    public synchronized AuditBlock createAuditBlock(String violationId, Map<String, Object> data) {
+    String vHash = sha256(new TreeMap<>(data).toString());
+    int idx = chain.size();
+    Instant timestamp = Instant.now();
+    String bHash = sha256(idx + ":" + lastHash + ":" + timestamp + ":" + vHash);
+    AuditBlock b = new AuditBlock(idx, violationId, vHash, lastHash, bHash, timestamp);
+    chain.add(b);
+    lastHash = bHash;
+    return b;
+}
     public Map<String,Object> verifyChain(){
         String genesis="0".repeat(64);
         for(int i=0;i<chain.size();i++){
