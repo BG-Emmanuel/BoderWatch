@@ -11,10 +11,11 @@ import RiskPage from '@/pages/RiskPage';
 import BlockchainPage from '@/pages/BlockchainPage';
 import StatsPage from '@/pages/StatsPage';
 import UsersPage from '@/pages/UsersPage';
+import AboutPage from '@/pages/AboutPage';
 
 function Guard({children}:{children:React.ReactNode}){
   const{user,isLoading}=useAuth();
-  if(isLoading)return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',color:'var(--teal)'}}>Loading BorderWatch…</div>;
+  if(isLoading)return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',color:'var(--teal)'}}>Loading BorderWatch...</div>;
   if(!user)return <Navigate to="/login" replace/>;
   return <>{children}</>;
 }
@@ -35,6 +36,7 @@ export default function App(){
             <Route path="blockchain" element={<BlockchainPage/>}/>
             <Route path="stats"      element={<StatsPage/>}/>
             <Route path="users"      element={<UsersPage/>}/>
+            <Route path="about"      element={<AboutPage/>}/>
             <Route path="*"          element={<Navigate to="/dashboard" replace/>}/>
           </Route>
         </Routes>

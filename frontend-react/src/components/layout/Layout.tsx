@@ -10,6 +10,7 @@ const NAV=[
   {path:'/blockchain',label:'Audit Chain',roles:['ROLE_ADMIN','ROLE_DIRECTOR','ROLE_OFFICER','ROLE_AUDITOR']},
   {path:'/stats',label:'Statistics',roles:['ROLE_ADMIN','ROLE_DIRECTOR','ROLE_OPS']},
   {path:'/users',label:'Users',roles:['ROLE_ADMIN']},
+  {path:'/about',label:'About Us',roles:['ROLE_ADMIN','ROLE_DIRECTOR','ROLE_OFFICER','ROLE_OPS','ROLE_AUDITOR']},
 ];
 const RC:Record<string,string>={ROLE_ADMIN:'#e84545',ROLE_DIRECTOR:'#f5a623',ROLE_OFFICER:'#0fb8a0',ROLE_OPS:'#8b5cf6',ROLE_AUDITOR:'#2a7fff',ROLE_BEACON:'#6b8aaa'};
 export default function Layout(){
@@ -18,7 +19,7 @@ export default function Layout(){
     <div style={{display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden'}}>
       <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',height:52,flexShrink:0,background:'var(--bg2)',borderBottom:'1px solid var(--border)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <div style={{width:30,height:30,border:'1.5px solid var(--teal)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>🛰</div>
+          <div style={{width:30,height:30,border:'1.5px solid var(--teal)',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>BW</div>
           <span style={{fontFamily:'monospace',fontSize:14,fontWeight:700,color:'var(--white)',letterSpacing:1}}>BORDER<span style={{color:'var(--teal)'}}>WATCH</span></span>
         </div>
         <nav style={{display:'flex',gap:2}}>
