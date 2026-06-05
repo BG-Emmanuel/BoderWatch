@@ -1,4 +1,16 @@
-package cm.borderwatch.compliance.adapter.in.web;
+@GetMapping("/chain")
+public ResponseEntity<?> chain() {
+    var blocks = svc.getChain();
+    if (blocks == null) {
+        blocks = java.util.List.of();
+    }
+
+    return ResponseEntity.ok(Map.of(
+        "blocks", blocks,
+        "merkleRoot", "",
+        "totalBlocks", blocks.size()
+    ));
+}package cm.borderwatch.compliance.adapter.in.web;
 import cm.borderwatch.compliance.adapter.out.db.ViolationRepository;
 import cm.borderwatch.compliance.domain.*;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +18,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@RestController @RequestMapping("/api/v1/compliance") @RequiredArgsConstructor
+@GetMapping("/chain")
+public ResponseEntity<?> chain() {
+    var blocks = svc.getChain();
+    if (blocks == null) {
+        blocks = java.util.List.of();
+    }
+
+    var merkleRoot = svc.buildMerkleRoot();
+    if (merkleRoot == null) {
+        merkleRoot = "";
+    }
+
+    return ResponseEntity.ok(Map.of(
+        "blocks", blocks,
+        "merkleRoot", merkleRoot,
+        "totalBlocks", blocks.size()
+    ));
+}@RestController @RequestMapping("/api/v1/compliance") @RequiredArgsConstructor
 public class ComplianceController {
     private final ComplianceService   svc;
     private final ViolationRepository repo;
