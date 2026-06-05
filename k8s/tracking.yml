@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking
+  namespace: borderwatch
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tracking
+  template:
+    metadata:
+      labels:
+        app: tracking
+    spec:
+      containers:
+        - name: tracking
+          image: borderwatch/tracking:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SERVICE_ID
+              value: tracking
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/borderwatch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+            - name: SPRING_DATASOURCE_USERNAME
+              value: bw
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: borderwatch-secrets
+                  key: MYSQL_PASSWORD
+            - name: SPRING_RABBITMQ_HOST
+              value: rabbitmq
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: borderwatch-secrets
+                  key: RABBITMQ_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-1
+  namespace: borderwatch
+spec:
+  selector:
+    app: tracking
+  ports:
+    - port: 8082
+      targetPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-2
+  namespace: borderwatch
+spec:
+  selector:
+    app: tracking
+  ports:
+    - port: 8082
+      targetPort: 8082
