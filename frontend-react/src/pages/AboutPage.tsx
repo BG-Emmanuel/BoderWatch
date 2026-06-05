@@ -2,32 +2,20 @@ import {Activity, Boxes, GitBranch, HeartPulse, ShieldCheck, Users} from 'lucide
 
 const teamMembers = [
   {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Project Lead / Scrum Master',
+    name: 'Nguend Arthur Johann',
+    regNo: 'ICTU20223180',
+    role: 'Full-Stack Developer · Documentation Lead · Spring Boot Backend · React/TypeScript Frontend · All Documents',
     contribution:
-      'Coordinated sprint planning, tracked deliverables, managed documentation, and helped align the implementation with the project requirements.',
+      'Developed backend and frontend features, maintained the project documentation, and coordinated implementation work across Spring Boot and React/TypeScript components.',
+    photoUrl: '/nguend-arthur.png',
   },
   {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Frontend Developer',
+    name: 'Tambi Emmanuel Tambi',
+    regNo: 'ICTU20233726',
+    role: 'Team Lead · Scrum Master · Product Owner · Architecture Review · Sprint Planning',
     contribution:
-      'Designed and implemented the user interface, application pages, navigation flow, and responsive dashboard experience.',
-  },
-  {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Backend Developer',
-    contribution:
-      'Implemented backend services, APIs, business logic, data handling, authentication flow, and service integration.',
-  },
-  {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'DevOps / QA Engineer',
-    contribution:
-      'Handled Docker, Kubernetes, Jenkins CI/CD, VPS deployment, monitoring setup, testing evidence, and release support.',
+      'Led the team, managed sprint planning and project coordination, owned product requirements, and guided architecture review and delivery priorities.',
+    photoUrl: '/tambi-emmanuel.png',
   },
 ];
 
@@ -68,8 +56,16 @@ function MemberCard({member,index}:{member:(typeof teamMembers)[number];index:nu
 
   return(
     <article className="card" style={{padding:18,display:'grid',gridTemplateColumns:'54px 1fr',gap:14,minHeight:170}}>
-      <div style={{width:54,height:54,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(15,184,160,.12)',border:'1px solid rgba(15,184,160,.35)',color:'var(--teal)',fontFamily:'monospace',fontSize:16,fontWeight:800}}>
-        {initials}
+      <div style={{width:54,height:54,borderRadius:8,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(15,184,160,.12)',border:'1px solid rgba(15,184,160,.35)',color:'var(--teal)',fontFamily:'monospace',fontSize:16,fontWeight:800}}>
+        {member.photoUrl ? (
+          <img
+            src={member.photoUrl}
+            alt={`Portrait of ${member.name}`}
+            style={{width:54,height:54,objectFit:'cover',display:'block'}}
+          />
+        ) : (
+          initials
+        )}
       </div>
       <div style={{minWidth:0}}>
         <h3 style={{fontSize:14,color:'var(--white)',marginBottom:5}}>{member.name}</h3>
