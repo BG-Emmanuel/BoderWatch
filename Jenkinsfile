@@ -59,3 +59,29 @@ pipeline {
     failure { echo "❌ BorderWatch pipeline ${GIT_SHA} FAILED" }
   }
 }
+    stage('11 - Deploy Staging') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        sh './scripts/start.sh'
+      }
+    }
+
+    stage('12 - Deploy Production') {
+      when {
+        branch 'main'
+      }
+      steps {
+        sh './scripts/start.sh'
+      }
+    }
+
+    stage('13 - Smoke Tests') {
+      when {
+        branch 'main'
+      }
+      steps {
+        sh 'curl -f http://localhost:8088/health && python3 simulator/simulator.py --rps 100 --duration 10'
+      }
+    }
