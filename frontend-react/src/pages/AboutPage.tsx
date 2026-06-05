@@ -1,33 +1,19 @@
-import {Activity, Boxes, GitBranch, HeartPulse, ShieldCheck, Users} from 'lucide-react';
+import {Boxes, GitBranch, HeartPulse, ShieldCheck, Users} from 'lucide-react';
 
 const teamMembers = [
   {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Project Lead / Scrum Master',
+    name: 'Nguend Arthur Johann',
+    regNo: 'ICTU20223180',
+    role: 'Full-Stack Developer Â· Documentation Lead',
     contribution:
-      'Coordinated sprint planning, tracked deliverables, managed documentation, and helped align the implementation with the project requirements.',
+      'Worked on the Spring Boot backend, React/TypeScript frontend, and project documentation. He contributed to service implementation, interface development, technical writeups, and the final document set.',
   },
   {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Frontend Developer',
+    name: 'Tambi Emmanuel Tambi',
+    regNo: 'ICTU20233726',
+    role: 'Team Lead Â· Scrum Master Â· Product Owner',
     contribution:
-      'Designed and implemented the user interface, application pages, navigation flow, and responsive dashboard experience.',
-  },
-  {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'Backend Developer',
-    contribution:
-      'Implemented backend services, APIs, business logic, data handling, authentication flow, and service integration.',
-  },
-  {
-    name: 'Team Member Name',
-    regNo: 'Registration Number',
-    role: 'DevOps / QA Engineer',
-    contribution:
-      'Handled Docker, Kubernetes, Jenkins CI/CD, VPS deployment, monitoring setup, testing evidence, and release support.',
+      'Led the team, managed sprint planning, coordinated Scrum activities, reviewed the system architecture, organized project direction, and supported delivery of the final BorderWatch solution.',
   },
 ];
 
@@ -142,11 +128,6 @@ export default function AboutPage(){
             ))}
           </div>
         </article>
-      </section>
-
-      <section className="card" style={{padding:14,display:'flex',alignItems:'center',gap:12,color:'var(--text2)',fontSize:11}}>
-        <Activity size={16} color="var(--teal)" />
-        <span>Note: update this page with the final team names, registration numbers, and exact contribution summaries before the presentation video and live demo.</span>
       </section>
     </div>
   );
