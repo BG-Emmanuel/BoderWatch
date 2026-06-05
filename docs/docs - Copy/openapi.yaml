@@ -1,0 +1,618 @@
+openapi: "3.0.3"
+info:
+  title: BorderWatch API
+  description: |
+    GPS goods-in-transit surveillance API for CEMAC customs corridors.
+
+    **Base URL (production):** http://VPS_IP:80
+    **Auth:** Bearer token in Authorization header (future — currently open for academic demo)
+
+    ## Rate Limiting
+    - Maximum 100 requests/second per IP address
+    - Burst up to 200 requests allowed
+
+    ## Response codes
+    - `202 Accepted` — payload received and queued for processing
+    - `200 OK` — synchronous query result
+    - `400 Bad Request` — validation error in request body
+    - `429 Too Many Requests` — rate limit exceeded
+    - `500 Internal Server Error` — upstream failure
+  version: "1.0.0"
+  contact:
+    name: BorderWatch Team
+    email: team@borderwatch.cm
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:80
+    description: Local Docker Compose development
+  - url: http://VPS_IP:80
+    description: Production VPS
+
+tags:
+  - name: Telemetry
+    description: GPS telemetry ingestion endpoints
+  - name: Tracking
+    description: Geofencing and corridor analysis
+  - name: Compliance
+    description: Violations, penalties, and audit trail
+
+paths:
+
+  /health:
+    get:
+      summary: Gateway health check
+      description: Returns 200 if the Nginx gateway is running and can reach upstream services.
+      tags: [Telemetry]
+      responses:
+        "200":
+          description: Gateway healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: borderwatch-gateway
+                  uptime:
+                    type: number
+                    example: 86400
+
+  /api/v1/telemetry:
+    post:
+      summary: Submit a single GPS telemetry ping
+      description: |
+        Accepts a GPS position report from a truck beacon.
+        Returns immediately with 202 Accepted — geofencing and compliance
+        processing happen asynchronously via RabbitMQ.
+        **Throughput tested:** 10,124 requests/second sustained.
+      tags: [Telemetry]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelemetryPayload"
+            examples:
+              on_route:
+                summary: Truck on authorised corridor
+                value:
+                  truck_id: CE-2024-ALPHA
+                  latitude: 4.9601
+                  longitude: 11.8616
+                  speed_kmh: 72.5
+                  heading: 45.0
+                  timestamp: "2026-04-15T10:30:00.000Z"
+              off_route:
+                summary: Truck deviating from corridor
+                value:
+                  truck_id: CE-2024-BETA
+                  latitude: 0.4162
+                  longitude: 9.4673
+                  speed_kmh: 28.0
+                  heading: 180.0
+      responses:
+        "202":
+          description: Telemetry accepted and queued for processing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryAccepted"
+              example:
+                accepted: true
+                id: 550e8400-e29b-41d4-a716-446655440099
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /api/v1/telemetry/batch:
+    post:
+      summary: Submit up to 1000 GPS pings in one request
+      description: |
+        Batch endpoint for high-frequency beacon aggregators.
+        Each item in the array is validated independently.
+        Invalid items are counted as rejected — the request
+        still returns 202 for the valid portion.
+        **Maximum batch size:** 1000 items.
+      tags: [Telemetry]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 1000
+              items:
+                $ref: "#/components/schemas/TelemetryPayload"
+      responses:
+        "202":
+          description: Batch processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchAccepted"
+              example:
+                accepted: 10
+                rejected: 0
+                ids:
+                  - 550e8400-e29b-41d4-a716-446655440001
+                  - 550e8400-e29b-41d4-a716-446655440002
+        "400":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/tracking/analyze:
+    post:
+      summary: Analyze a GPS position against corridor definitions
+      description: |
+        Synchronous geofencing check. Returns whether the given
+        coordinates are within an authorised customs corridor.
+        Uses the Haversine formula + perpendicular segment distance.
+      tags: [Tracking]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude]
+              properties:
+                latitude:
+                  type: number
+                  minimum: -90
+                  maximum: 90
+                  example: 4.9601
+                longitude:
+                  type: number
+                  minimum: -180
+                  maximum: 180
+                  example: 11.8616
+      responses:
+        "200":
+          description: Geofencing analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeofenceResult"
+              examples:
+                on_route:
+                  summary: Truck on authorised route
+                  value:
+                    status: ON_ROUTE
+                    corridor: CORRIDOR_DOUALA_NDJAMENA
+                    minDistanceKm: 0.4
+                off_route:
+                  summary: Truck off route
+                  value:
+                    status: OFF_ROUTE
+                    corridor: null
+                    minDistanceKm: 412.7
+
+  /api/v1/tracking/corridors:
+    get:
+      summary: List all active customs corridors
+      tags: [Tracking]
+      responses:
+        "200":
+          description: List of active corridor definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Corridor"
+
+  /api/v1/compliance/violations:
+    get:
+      summary: List recorded violations
+      description: Paginated list of compliance violations, filterable by severity, truck ID, and date range.
+      tags: [Compliance]
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH]
+          description: Filter by violation severity
+        - name: truck_id
+          in: query
+          schema:
+            type: string
+          description: Filter by specific truck ID
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Start of date range (ISO 8601)
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: End of date range (ISO 8601)
+      responses:
+        "200":
+          description: Violations list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  violations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Violation"
+                  count:
+                    type: integer
+                    example: 47
+                  totalPenaltyFcfa:
+                    type: integer
+                    example: 18600000
+
+  /api/v1/compliance/violations/{id}:
+    get:
+      summary: Get a single violation by ID
+      tags: [Compliance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Violation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Violation"
+        "404":
+          description: Violation not found
+
+  /api/v1/compliance/violations/{id}/acknowledge:
+    post:
+      summary: Acknowledge a violation (status transition)
+      description: Transitions violation from PENDING to ACKNOWLEDGED. Records officer chain-of-custody.
+      tags: [Compliance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [officer_id]
+              properties:
+                officer_id:
+                  type: string
+                  example: OFFICER-007
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Violation acknowledged — audit entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditEntry"
+        "400":
+          description: Invalid status transition
+
+  /api/v1/compliance/stats:
+    get:
+      summary: Compliance statistics summary
+      description: Daily and weekly aggregates of violations, penalties, and corridor performance.
+      tags: [Compliance]
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceStats"
+
+  /api/v1/compliance/certificate/{id}:
+    get:
+      summary: Generate blockchain compliance certificate for a violation
+      description: |
+        Returns a cryptographically signed compliance certificate
+        with SHA-256 hash chain proof for court submission.
+      tags: [Compliance]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Compliance certificate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplianceCertificate"
+
+  /metrics:
+    get:
+      summary: Prometheus metrics endpoint
+      description: Exposes prom-client metrics for Prometheus scraping. Scraped every 5s by Prometheus.
+      tags: [Telemetry]
+      responses:
+        "200":
+          description: Prometheus text format metrics
+          content:
+            text/plain:
+              example: |
+                ingestion_telemetry_total 10124
+                ingestion_http_request_duration_seconds_bucket{le="0.1"} 9987
+
+components:
+  schemas:
+
+    TelemetryPayload:
+      type: object
+      required: [truck_id, latitude, longitude]
+      properties:
+        truck_id:
+          type: string
+          maxLength: 20
+          description: Unique truck/vehicle identifier
+          example: CE-2024-ALPHA
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: GPS latitude in decimal degrees
+          example: 4.9601
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: GPS longitude in decimal degrees
+          example: 11.8616
+        speed_kmh:
+          type: number
+          minimum: 0
+          maximum: 200
+          description: Current speed in km/h (optional)
+          example: 72.5
+        heading:
+          type: number
+          minimum: 0
+          maximum: 360
+          description: Compass heading in degrees (optional)
+          example: 45.0
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of GPS reading (defaults to server time if omitted)
+          example: "2026-04-15T10:30:00.000Z"
+
+    TelemetryAccepted:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+          example: true
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier assigned to this telemetry record
+          example: 550e8400-e29b-41d4-a716-446655440099
+
+    BatchAccepted:
+      type: object
+      properties:
+        accepted:
+          type: integer
+          description: Number of valid pings queued for processing
+          example: 10
+        rejected:
+          type: integer
+          description: Number of invalid pings that failed validation
+          example: 0
+        ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: IDs assigned to accepted pings
+
+    GeofenceResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ON_ROUTE, OFF_ROUTE, STATIONARY]
+          example: ON_ROUTE
+        corridor:
+          type: string
+          nullable: true
+          description: ID of the matched corridor (null if OFF_ROUTE)
+          example: CORRIDOR_DOUALA_NDJAMENA
+        minDistanceKm:
+          type: number
+          description: Minimum distance from the nearest corridor boundary (km)
+          example: 0.4
+
+    Corridor:
+      type: object
+      properties:
+        id:
+          type: string
+          example: CORRIDOR_DOUALA_NDJAMENA
+        name:
+          type: string
+          example: "Douala–N'Djamena Customs Corridor"
+        toleranceKm:
+          type: number
+          example: 25
+        waypointCount:
+          type: integer
+          example: 6
+
+    Violation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        truck_id:
+          type: string
+          example: CE-2024-BETA
+        latitude:
+          type: number
+          example: 0.4162
+        longitude:
+          type: number
+          example: 9.4673
+        deviation_km:
+          type: number
+          example: 87.3
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+          example: HIGH
+        penalty_fcfa:
+          type: integer
+          example: 1000000
+        detected_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, ACKNOWLEDGED, CONTESTED, RESOLVED]
+          example: PENDING
+
+    AuditEntry:
+      type: object
+      properties:
+        violation_id:
+          type: string
+          format: uuid
+        from_status:
+          type: string
+          example: PENDING
+        to_status:
+          type: string
+          example: ACKNOWLEDGED
+        officer_id:
+          type: string
+          example: OFFICER-007
+        transitioned_at:
+          type: string
+          format: date-time
+
+    ComplianceStats:
+      type: object
+      properties:
+        period:
+          type: string
+          example: "2026-04-15"
+        totalViolations:
+          type: integer
+          example: 47
+        bySeverity:
+          type: object
+          properties:
+            LOW:
+              type: integer
+              example: 24
+            MEDIUM:
+              type: integer
+              example: 15
+            HIGH:
+              type: integer
+              example: 8
+        totalPenaltyFcfa:
+          type: integer
+          example: 18600000
+        byCorridor:
+          type: object
+          additionalProperties:
+            type: integer
+        peakHour:
+          type: integer
+          example: 2
+
+    ComplianceCertificate:
+      type: object
+      properties:
+        certificate_id:
+          type: string
+          example: BWCERT-CE-2024-BETA-1715000000000
+        issued_at:
+          type: string
+          format: date-time
+        violation:
+          type: object
+        cryptographic_proof:
+          type: object
+          properties:
+            violation_hash:
+              type: string
+              example: a3f7e2c1b4d89051...
+            audit_block_hash:
+              type: string
+            merkle_root:
+              type: string
+            algorithm:
+              type: string
+              example: SHA-256
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed: latitude must be <= 90"
+        statusCode:
+          type: integer
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "Validation failed: truck_id is required"
+            statusCode: 400
+            timestamp: "2026-04-15T10:30:00.000Z"
+    RateLimited:
+      description: Rate limit exceeded (100 req/s per IP)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
