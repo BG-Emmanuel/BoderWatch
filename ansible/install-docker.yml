@@ -1,0 +1,17 @@
+---
+- name: Install and configure Docker
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install Docker package
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
