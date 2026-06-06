@@ -1,0 +1,25 @@
+---
+- name: Deploy Jenkins container
+  hosts: localhost
+  become: no
+  tasks:
+    - name: Check if Jenkins container exists
+      command: docker inspect jenkins
+      register: jenkins_exists
+      ignore_errors: yes
+
+    - name: Start Jenkins if not running
+      command: >
+        docker run -d
+        --name jenkins
+        -p 127.0.0.1:8080:8080
+        -p 127.0.0.1:50000:50000
+        -v jenkins_home:/var/jenkins_home
+        --restart unless-stopped
+        jenkins/jenkins:lts
+      when: jenkins_exists.rc != 0
+
+    - name: Ensure Jenkins is running
+      command: docker start jenkins
+      when: jenkins_exists.rc == 0
+      ignore_errors: yes

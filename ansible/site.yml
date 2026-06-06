@@ -1,0 +1,8 @@
+---
+- import_playbook: install-docker.yml
+- import_playbook: install-nginx.yml
+- import_playbook: configure-system.yml
+- import_playbook: configure-nginx.yml
+- import_playbook: deploy-borderwatch.yml
+- import_playbook: deploy-jenkins.yml
+- import_playbook: verify-services.yml

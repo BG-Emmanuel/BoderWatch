@@ -1,0 +1,21 @@
+---
+server_ip: "13.140.132.85"
+deploy_user: deployer
+project_dir: /home/deployer/BoderWatch
+
+docker_services:
+  - tracking-1
+  - tracking-2
+  - compliance-1
+  - compliance-2
+  - ingestion-1
+  - ingestion-2
+  - gateway
+  - rabbitmq
+  - mysql
+  - prometheus
+  - grafana
+  - alertmanager
+  - node-exporter
+  - sonarqube
+  - sonarqube-db

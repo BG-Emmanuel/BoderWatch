@@ -1,0 +1,45 @@
+---
+- name: Verify all services are running
+  hosts: localhost
+  become: no
+  tasks:
+    - name: Check all containers are up
+      command: docker ps --format "{{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}"
+      register: container_status
+
+    - name: Print container status
+      debug:
+        msg: "{{ container_status.stdout_lines }}"
+
+    - name: Check gateway health
+      uri:
+        url: http://localhost:8088/actuator/health
+        method: GET
+        status_code: 200
+      register: gateway_health
+      ignore_errors: yes
+
+    - name: Check ingestion health
+      uri:
+        url: http://localhost:8081/actuator/health
+        method: GET
+        status_code: 200
+      ignore_errors: yes
+
+    - name: Check SonarQube status
+      uri:
+        url: http://localhost:9000/api/system/status
+        method: GET
+        status_code: 200
+      ignore_errors: yes
+
+    - name: Check Prometheus health
+      uri:
+        url: http://localhost:9090/-/healthy
+        method: GET
+        status_code: 200
+      ignore_errors: yes
+
+    - name: Print health summary
+      debug:
+        msg: "Gateway health: {{ gateway_health.status | default('UNREACHABLE') }}"

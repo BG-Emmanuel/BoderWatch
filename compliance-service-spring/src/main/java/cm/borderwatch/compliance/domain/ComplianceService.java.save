@@ -1,0 +1,82 @@
+package cm.borderwatch.compliance.domain;
+
+import org.springframework.stereotype.Service;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+class TransitionRules {
+    private static final Map<ViolationStatus,Set<ViolationStatus>> R=Map.of(
+        ViolationStatus.PENDING,Set.of(ViolationStatus.ACKNOWLEDGED,ViolationStatus.CONTESTED),
+        ViolationStatus.ACKNOWLEDGED,Set.of(ViolationStatus.RESOLVED,ViolationStatus.CONTESTED),
+        ViolationStatus.CONTESTED,Set.of(ViolationStatus.ACKNOWLEDGED,ViolationStatus.RESOLVED),
+        ViolationStatus.RESOLVED,Set.of());
+    static boolean isValid(ViolationStatus from,ViolationStatus to){return R.getOrDefault(from,Set.of()).contains(to);}
+}
+
+@Service
+public class ComplianceService {
+    private static final Map<Severity,Long> PENALTIES=Map.of(Severity.LOW,50_000L,Severity.MEDIUM,200_000L,Severity.HIGH,1_000_000L);
+    private final List<AuditBlock> chain=new CopyOnWriteArrayList<>();
+    private volatile String lastHash="0".repeat(64);
+
+    public ClassifyResult classifyViolation(double km){
+        if(km<0) throw new IllegalArgumentException("deviationKm must be non-negative");
+        Severity s=km>100?Severity.HIGH:km>25?Severity.MEDIUM:Severity.LOW;
+        return new ClassifyResult(s,PENALTIES.get(s));
+    }
+    public boolean isValidTransition(ViolationStatus from,ViolationStatus to){
+        if(from==null) throw new IllegalArgumentException("from status must not be null");
+        return TransitionRules.isValid(from,to);
+    }
+    public AuditEntry buildAuditEntry(String id,ViolationStatus from,ViolationStatus to,String officerId){
+        if(!isValidTransition(from,to)) throw new IllegalArgumentException("Invalid transition: "+from+" → "+to);
+        return new AuditEntry(id,from,to,officerId,Instant.now());
+    }
+    public synchronized AuditBlock createAuditBlock(String violationId,Map<String,Object> data){
+        String vHash=sha256(new TreeMap<>(data).toString());
+        int idx=chain.size();
+        String bHash=sha256(idx+":"+lastHash+":"+Instant.now()+":"+vHash);
+        AuditBlock b=new AuditBlock(idx,violationId,vHash,lastHash,bHash,Instant.now());
+        chain.add(b); lastHash=bHash; return b;
+    }
+    public Map<String,Object> verifyChain(){
+        String genesis="0".repeat(64);
+        for(int i=0;i<chain.size();i++){
+            AuditBlock b=chain.get(i);
+            String ep=i==0?genesis:chain.get(i-1).blockHash();
+            if(!b.previousHash().equals(ep)) return Map.of("valid",false,"message","Chain broken at block "+i);
+            String rc=sha256(b.index()+":"+b.previousHash()+":"+b.timestamp()+":"+b.violationHash());
+            if(!rc.equals(b.blockHash())) return Map.of("valid",false,"message","Tampered at block "+i);
+public synchronized AuditBlock createAuditBlock(String violationId, Map<String, Object> data) {
+    String vHash = sha256(new TreeMap<>(data).toString());
+    int idx = chain.size();
+    Instant timestamp = Instant.now();
+    String bHash = sha256(idx + ":" + lastHash + ":" + timestamp + ":" + vHash);
+    AuditBlock b = new AuditBlock(idx, violationId, vHash, lastHash, bHash, timestamp);
+    chain.add(b);
+    lastHash = bHash;
+    return b;
+}        }
+        return Map.of("valid",true,"message","Chain verified: "+chain.size()+" blocks unaltered.");
+    }
+    public String buildMerkleRoot(){
+        if(chain.isEmpty()) return null;
+        List<String> l=new ArrayList<>(chain.stream().map(AuditBlock::violationHash).toList());
+        while(l.size()>1){
+            if(l.size()%2!=0)l.add(l.get(l.size()-1));
+            List<String> n=new ArrayList<>();
+            for(int i=0;i<l.size();i+=2)n.add(sha256(l.get(i)+l.get(i+1)));
+            l=n;
+        }
+        return l.get(0);
+    }
+    public List<AuditBlock> getChain(){ return Collections.unmodifiableList(chain); }
+    private String sha256(String input){
+        try{byte[] b=MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb=new StringBuilder(); for(byte x:b)sb.append(String.format("%02x",x)); return sb.toString();}
+        catch(Exception e){throw new RuntimeException("SHA-256 failed",e);}
+    }
+}

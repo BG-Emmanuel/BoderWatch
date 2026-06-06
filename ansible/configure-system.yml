@@ -1,0 +1,42 @@
+---
+- name: Configure system settings
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Set vm.max_map_count for SonarQube/Elasticsearch
+      sysctl:
+        name: vm.max_map_count
+        value: "524288"
+        state: present
+        reload: yes
+
+    - name: Set fs.file-max
+      sysctl:
+        name: fs.file-max
+        value: "131072"
+        state: present
+        reload: yes
+
+    - name: Give deployer passwordless sudo
+      lineinfile:
+        path: /etc/sudoers
+        line: "deployer ALL=(ALL) NOPASSWD: ALL"
+        validate: "visudo -cf %s"
+
+    - name: Ensure deployer is in docker group
+      user:
+        name: deployer
+        groups: docker
+        append: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - python3
+          - python3-pip
+          - net-tools
+        state: present
+        update_cache: yes
